@@ -1,7 +1,9 @@
 package com.integration.githubintegration.service;
 
-import com.integration.githubintegration.client.IntegrationClient;
-import com.integration.githubintegration.model.RepoDTO;
+import com.integration.githubintegration.client.GitHubClient;
+import com.integration.githubintegration.mapper.RepoMapper;
+import com.integration.githubintegration.model.dto.RepoAppDTO;
+import com.integration.githubintegration.model.dto.RepoGitDTO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,37 +21,54 @@ import static org.mockito.ArgumentMatchers.eq;
 public class GitHubIntegrationServiceTest {
 
     @Mock
-    IntegrationClient integrationClient;
+    GitHubClient gitHubClient;
+    @Mock
+    RepoMapper repoMapper;
     @InjectMocks
     GitHubIntegrationService gitHubIntegrationService;
 
     @Test
     void getRepositoryByOwnerAndRepoName_DataCorrect_RepositoryFound() {
-        RepoDTO repoDTO = new RepoDTO();
-        repoDTO.setName("reporepo");
-        repoDTO.setId(1234);
-        repoDTO.setFull_name("Fornir94/reporepo");
-        Mockito.when(integrationClient.getRepository(eq("Fornir94"), eq("reporepo"))).thenReturn(repoDTO);
+        RepoAppDTO repoAppDTO = new RepoAppDTO();
+        repoAppDTO.setName("reporepo");
+        repoAppDTO.setId(1234);
+        repoAppDTO.setFullName("Fornir94/reporepo");
+        RepoGitDTO repoGitDTO = new RepoGitDTO();
+        repoGitDTO.setName("reporepo");
+        repoGitDTO.setId(1234);
+        repoGitDTO.setFullName("Fornir94/reporepo");
+        Mockito.when(gitHubClient.getRepository(eq("Fornir94"), eq("reporepo"))).thenReturn(repoGitDTO);
+        Mockito.when(repoMapper.toDto(eq(repoGitDTO))).thenReturn(repoAppDTO);
 
-        var result = gitHubIntegrationService.getRepositoryByOwnerAndRepoName("Fornir94", "reporepo");
+
+        var result = gitHubIntegrationService.getRepositoryByUsernameAndRepoName("Fornir94", "reporepo");
 
         Assertions.assertEquals("reporepo", result.getName());
-        Assertions.assertEquals("Fornir94/reporepo", result.getFull_name());
+        Assertions.assertEquals("Fornir94/reporepo", result.getFullName());
     }
 
     @Test
     void getAllRepositoriesByOwner_DataCorrect_RepositoriesReturned() {
-        RepoDTO repoDTO = new RepoDTO();
-        repoDTO.setName("Repo1");
-        repoDTO.setId(1234);
-        RepoDTO repoDTO1 = new RepoDTO();
-        repoDTO1.setName("Repo2");
-        repoDTO1.setId(4321);
-        List<RepoDTO> repoDTOList = new ArrayList<>();
-        repoDTOList.add(repoDTO1);
-        repoDTOList.add(repoDTO);
+        RepoGitDTO repoGitDTO = new RepoGitDTO();
+        repoGitDTO.setName("Repo1");
+        repoGitDTO.setId(1234);
+        RepoGitDTO repoGitDTO1 = new RepoGitDTO();
+        ;
+        repoGitDTO1.setName("Repo2");
+        repoGitDTO1.setId(4321);
+        List<RepoGitDTO> repoGitDTOS = new ArrayList<>();
+        repoGitDTOS.add(repoGitDTO1);
+        repoGitDTOS.add(repoGitDTO);
+        RepoAppDTO repoAppDTO = new RepoAppDTO();
+        repoAppDTO.setName("Repo1");
+        repoAppDTO.setId(1234);
+        RepoAppDTO repoAppDTO1 = new RepoAppDTO();
+        repoAppDTO1.setName("Repo2");
+        repoAppDTO1.setId(4321);
 
-        Mockito.when(integrationClient.getAllRepositories(eq("Fornir94"))).thenReturn(repoDTOList);
+        Mockito.when(gitHubClient.getAllRepositories(eq("Fornir94"))).thenReturn(repoGitDTOS);
+        Mockito.when(repoMapper.toDto(eq(repoGitDTO))).thenReturn(repoAppDTO);
+        Mockito.when(repoMapper.toDto(eq(repoGitDTO1))).thenReturn(repoAppDTO1);
 
         var result = gitHubIntegrationService.getAllRepositoriesByOwner("Fornir94");
 
